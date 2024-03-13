@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	nontesting "github.com/k1LoW/nontest/testing"
@@ -62,6 +63,86 @@ func TestTestServer(t *testing.T) {
 	_ = res.Body.Close()
 	if string(b) != "OK" {
 		t.Errorf("response body is not 'OK': %s", string(b))
+	}
+}
+
+func TestCleanup(t *testing.T) {
+	var got []int
+	nt := New()
+	nt.Cleanup(func() {
+		got = append(got, 1)
+	})
+	nt.Cleanup(func() {
+		got = append(got, 2)
+	})
+	nt.Cleanup(func() {
+		got = append(got, 3)
+	})
+
+	if len(got) != 0 {
+		t.Errorf("got %v, want %v", got, []int{})
+	}
+
+	nt.TearDown()
+
+	want := []int{3, 2, 1}
+	if len(got) != len(want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+	for i, v := range got {
+		if v != want[i] {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	}
+}
+
+func TestSetenv(t *testing.T) {
+	t.Setenv("EXIST_ENV", "exist")
+	nt := New()
+
+	{
+		nt.Setenv("EXIST_ENV", "foo")
+		got := os.Getenv("EXIST_ENV")
+		if want := "foo"; got != want {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	}
+	{
+		nt.Setenv("NOT_EXIST_ENV", "bar")
+		got := os.Getenv("NOT_EXIST_ENV")
+		if want := "bar"; got != want {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	}
+
+	nt.TearDown()
+
+	{
+		got, ok := os.LookupEnv("EXIST_ENV")
+		if want := "exist"; got != want || !ok {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	}
+
+	_, ok := os.LookupEnv("NOT_EXIST_ENV")
+	if ok {
+		t.Errorf("env NOT_EXIST_ENV is not unset")
+	}
+}
+
+func TestTempDir(t *testing.T) {
+	nt := New()
+
+	dir := nt.TempDir()
+
+	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
+		t.Errorf("got %v, want %v", fi, "directory")
+	}
+
+	nt.TearDown()
+
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		t.Errorf("temp dir is not removed")
 	}
 }
 
