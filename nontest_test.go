@@ -1,4 +1,4 @@
-package nontest
+package nontest_test
 
 import (
 	"bytes"
@@ -9,13 +9,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/k1LoW/nontest"
 	nontesting "github.com/k1LoW/nontest/testing"
 )
 
 func TestNotTest(t *testing.T) {
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))
-	nt := New(WithLogger(logger))
+	nt := nontest.New(nontest.WithLogger(logger))
 	ts := testServer(nt)
 	res, err := http.Get(ts.URL)
 	if err != nil {
@@ -68,7 +69,7 @@ func TestTestServer(t *testing.T) {
 
 func TestCleanup(t *testing.T) {
 	var got []int
-	nt := New()
+	nt := nontest.New()
 	nt.Cleanup(func() {
 		got = append(got, 1)
 	})
@@ -98,7 +99,7 @@ func TestCleanup(t *testing.T) {
 
 func TestSetenv(t *testing.T) {
 	t.Setenv("EXIST_ENV", "exist")
-	nt := New()
+	nt := nontest.New()
 
 	{
 		nt.Setenv("EXIST_ENV", "foo")
@@ -131,7 +132,7 @@ func TestSetenv(t *testing.T) {
 }
 
 func TestTempDir(t *testing.T) {
-	nt := New()
+	nt := nontest.New()
 
 	dir := nt.TempDir()
 
