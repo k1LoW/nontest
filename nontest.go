@@ -15,6 +15,7 @@ var _ testing.TB = (*nonTest)(nil)
 
 type nonTest struct {
 	logger       *slog.Logger
+	allowExit    bool
 	failed       bool
 	skipped      bool
 	finished     bool
@@ -26,12 +27,21 @@ type nonTest struct {
 
 type Option func(*nonTest)
 
+// WithLogger returns an Option to set logger.
 func WithLogger(logger *slog.Logger) Option {
 	return func(t *nonTest) {
 		t.logger = logger
 	}
 }
 
+// AllowExit returns an Option to allow exit.
+func AllowExit() Option {
+	return func(t *nonTest) {
+		t.allowExit = true
+	}
+}
+
+// New returns a new nonTest.
 func New(opts ...Option) *nonTest {
 	t := &nonTest{
 		logger:   slog.New(slog.NewJSONHandler(os.Stdout, nil)),
@@ -88,7 +98,9 @@ func (t *nonTest) FailNow() {
 	t.Fail()
 	t.finished = true
 	t.TearDown()
-	runtime.Goexit()
+	if t.allowExit {
+		runtime.Goexit()
+	}
 }
 
 func (t *nonTest) Failed() bool {
@@ -144,7 +156,9 @@ func (t *nonTest) SkipNow() {
 	t.skipped = true
 	t.finished = true
 	t.TearDown()
-	runtime.Goexit()
+	if t.allowExit {
+		runtime.Goexit()
+	}
 }
 
 func (t *nonTest) Skipf(format string, args ...any) {
