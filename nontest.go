@@ -15,7 +15,7 @@ var _ testing.TB = (*nonTest)(nil)
 
 type nonTest struct {
 	logger       *slog.Logger
-	skipExit     bool
+	allowExit    bool
 	failed       bool
 	skipped      bool
 	finished     bool
@@ -34,10 +34,10 @@ func WithLogger(logger *slog.Logger) Option {
 	}
 }
 
-// SkipExit returns an Option to skip exit.
-func SkipExit() Option {
+// AllowExit returns an Option to allow exit.
+func AllowExit() Option {
 	return func(t *nonTest) {
-		t.skipExit = true
+		t.allowExit = true
 	}
 }
 
@@ -98,7 +98,7 @@ func (t *nonTest) FailNow() {
 	t.Fail()
 	t.finished = true
 	t.TearDown()
-	if !t.skipExit {
+	if t.allowExit {
 		runtime.Goexit()
 	}
 }
@@ -156,7 +156,7 @@ func (t *nonTest) SkipNow() {
 	t.skipped = true
 	t.finished = true
 	t.TearDown()
-	if !t.skipExit {
+	if t.allowExit {
 		runtime.Goexit()
 	}
 }
