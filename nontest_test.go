@@ -151,7 +151,7 @@ func testServer(t nontesting.TB) *httptest.Server {
 	t.Helper()
 	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	})
 	ts := httptest.NewServer(h)
 	t.Log("Server started")
