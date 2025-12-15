@@ -11,8 +11,8 @@ lint:
 	golangci-lint run ./...
 
 depsdev:
-	go install github.com/Songmu/ghch/cmd/ghch@latest
-	go install github.com/Songmu/gocredits/cmd/gocredits@latest
+	gh extension install k1LoW/gh-setup
+	gh setup --repo Songmu/gocredits
 
 prerelease:
 	git pull origin main --tag
