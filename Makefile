@@ -19,13 +19,13 @@ prerelease:
 	go mod tidy
 	ghch -w -N ${VER}
 	$(MAKE) credits
-	git add CHANGELOG.md CREDITS go.mod go.sum
+	git add CHANGELOG.md CREDITS go.mod $(wildcard go.sum)
 	git commit -m'Bump up version number'
 	git tag ${VER}
 
 prerelease_for_tagpr:
 	$(MAKE) credits
-	git add CHANGELOG.md CREDITS go.mod go.sum
+	git add CHANGELOG.md CREDITS go.mod $(wildcard go.sum)
 
 release:
 	git push origin main --tag
